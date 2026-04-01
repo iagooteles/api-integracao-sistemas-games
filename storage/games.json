@@ -1,0 +1,15 @@
+{
+  "items": [
+    {
+      "id": 2,
+      "title": "Cyerpunk",
+      "genre": "RPG",
+      "releaseYear": 2022,
+      "price": 59990.99,
+      "platform": "PC",
+      "publisherId": 1,
+      "metacriticScore": 88
+    }
+  ],
+  "nextId": 3
+}

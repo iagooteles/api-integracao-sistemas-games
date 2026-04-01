@@ -1,0 +1,14 @@
+{
+  "items": [
+    {
+      "id": 1,
+      "name": "iag  teste  put",
+      "email": "iago.t@email.com",
+      "username": "iagooooooooooo",
+      "country": "BR",
+      "birthDate": "2000-05-10",
+      "bio": "Gosto de RPGs e jogos indie."
+    }
+  ],
+  "nextId": 3
+}

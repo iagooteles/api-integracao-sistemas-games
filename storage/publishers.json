@@ -1,0 +1,14 @@
+{
+  "items": [
+    {
+      "id": 1,
+      "name": "Teste JSON",
+      "country": "BR",
+      "foundedYear": 2020,
+      "website": "https://t.com",
+      "headquarters": "SP",
+      "isIndie": true
+    }
+  ],
+  "nextId": 2
+}
