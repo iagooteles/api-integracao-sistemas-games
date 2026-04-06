@@ -1,64 +1,71 @@
-import { readFile, writeFile, mkdir } from "fs/promises";
-import { dirname, join } from "path";
-import { fileURLToPath } from "url";
+import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const STORAGE_DIR = join(__dirname, "..", "..", "storage");
 
-const RESOURCES = ["games", "users", "achievements", "publishers"];
-const cache = new Map();
+const RESOURCE_KEYS = ["games", "users", "achievements", "publishers"];
 
-function pathFor(name) {
-  return join(STORAGE_DIR, `${name}.json`);
+const inMemoryCollections = new Map();
+
+function jsonPathForResource(resourceKey) {
+  return join(STORAGE_DIR, `${resourceKey}.json`);
 }
 
-function normalizeCollection(data) {
-  const items = Array.isArray(data?.items) ? data.items : [];
-  const storedNext = typeof data?.nextId === "number" && data.nextId >= 1 ? data.nextId : 1;
-  const maxId = items.reduce((m, i) => Math.max(m, Number(i?.id) || 0), 0);
-  const nextId = Math.max(storedNext, maxId + 1);
+function coercePersistedShape(parsed) {
+  const items = Array.isArray(parsed?.items) ? parsed.items : [];
+  const storedNextId =
+    typeof parsed?.nextId === "number" && parsed.nextId >= 1 ? parsed.nextId : 1;
+  const highestExistingId = items.reduce(
+    (max, row) => Math.max(max, Number(row?.id) || 0),
+    0
+  );
+  const nextId = Math.max(storedNextId, highestExistingId + 1);
+  
   return { items, nextId };
 }
 
-async function loadOrCreateFile(name) {
+async function readCollectionFromDiskOrSeedEmpty(resourceKey) {
   await mkdir(STORAGE_DIR, { recursive: true });
-  const p = pathFor(name);
+  const filePath = jsonPathForResource(resourceKey);
   try {
-    const raw = await readFile(p, "utf8");
-    return normalizeCollection(JSON.parse(raw));
-  } catch (e) {
-    if (e.code === "ENOENT") {
+    const raw = await readFile(filePath, "utf8");
+    return coercePersistedShape(JSON.parse(raw));
+  } catch (error) {
+    if (error.code === "ENOENT") {
       const empty = { items: [], nextId: 1 };
-      await writeFile(p, JSON.stringify(empty, null, 2), "utf8");
+      await writeFile(filePath, JSON.stringify(empty, null, 2), "utf8");
       return empty;
     }
-    throw e;
+    throw error;
   }
 }
 
-async function persist(name) {
-  const col = getCollection(name);
+async function writeCollectionToDisk(resourceKey) {
+  const collection = getLoadedCollection(resourceKey);
   await writeFile(
-    pathFor(name),
-    JSON.stringify({ items: col.items, nextId: col.nextId }, null, 2),
+    jsonPathForResource(resourceKey),
+    JSON.stringify({ items: collection.items, nextId: collection.nextId }, null, 2),
     "utf8"
   );
 }
 
-function getCollection(name) {
-  const col = cache.get(name);
-  if (!col) throw new Error(`Store não inicializado para "${name}". Chame initJsonStore() antes do servidor.`);
-  return col;
+function getLoadedCollection(resourceKey) {
+  const collection = inMemoryCollections.get(resourceKey);
+  if (!collection) {
+    throw new Error(`Store não inicializado para "${resourceKey}".`);
+  }
+  return collection;
 }
 
 export async function initJsonStore() {
-  for (const name of RESOURCES) {
-    const col = await loadOrCreateFile(name);
-    cache.set(name, col);
+  for (const resourceKey of RESOURCE_KEYS) {
+    const collection = await readCollectionFromDiskOrSeedEmpty(resourceKey);
+    inMemoryCollections.set(resourceKey, collection);
   }
 }
 
-/** Chaves dos arquivos em storage/{nome}.json */
 export const db = {
   games: "games",
   users: "users",
@@ -66,43 +73,48 @@ export const db = {
   publishers: "publishers",
 };
 
-export function list(resource) {
-  const col = getCollection(resource);
-  return [...col.items];
+export function list(resourceKey) {
+  const collection = getLoadedCollection(resourceKey);
+
+  return [...collection.items];
 }
 
-export function findById(resource, id) {
-  const col = getCollection(resource);
-  const numId = Number(id);
-  return col.items.find((item) => item.id === numId) ?? null;
+export function findById(resourceKey, id) {
+  const collection = getLoadedCollection(resourceKey);
+  const numericId = Number(id);
+
+  return collection.items.find((row) => row.id === numericId) ?? null;
 }
 
-export async function create(resource, data) {
-  const col = getCollection(resource);
-  const id = col.nextId++;
-  const record = { id, ...data };
-  col.items.push(record);
-  await persist(resource);
+export async function create(resourceKey, payload) {
+  const collection = getLoadedCollection(resourceKey);
+  const id = collection.nextId++;
+  const record = { id, ...payload };
+  collection.items.push(record);
+  await writeCollectionToDisk(resourceKey);
+
   return record;
 }
 
-export async function update(resource, id, data) {
-  const col = getCollection(resource);
-  const numId = Number(id);
-  const index = col.items.findIndex((item) => item.id === numId);
+export async function update(resourceKey, id, partial) {
+  const collection = getLoadedCollection(resourceKey);
+  const numericId = Number(id);
+  const index = collection.items.findIndex((row) => row.id === numericId);
   if (index === -1) return null;
-  const updated = { ...col.items[index], ...data, id: numId };
-  col.items[index] = updated;
-  await persist(resource);
-  return updated;
+  const merged = { ...collection.items[index], ...partial, id: numericId };
+  collection.items[index] = merged;
+  await writeCollectionToDisk(resourceKey);
+
+  return merged;
 }
 
-export async function remove(resource, id) {
-  const col = getCollection(resource);
-  const numId = Number(id);
-  const index = col.items.findIndex((item) => item.id === numId);
+export async function remove(resourceKey, id) {
+  const collection = getLoadedCollection(resourceKey);
+  const numericId = Number(id);
+  const index = collection.items.findIndex((row) => row.id === numericId);
   if (index === -1) return false;
-  col.items.splice(index, 1);
-  await persist(resource);
+  collection.items.splice(index, 1);
+  await writeCollectionToDisk(resourceKey);
+
   return true;
 }

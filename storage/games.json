@@ -9,7 +9,17 @@
       "platform": "PC",
       "publisherId": 1,
       "metacriticScore": 88
+    },
+    {
+      "id": 3,
+      "title": "Pixel Dungeon Tales",
+      "genre": "Roguelike",
+      "releaseYear": 2022,
+      "price": 14.5,
+      "platform": "Nintendo Switch",
+      "publisherId": 1,
+      "metacriticScore": 81
     }
   ],
-  "nextId": 3
+  "nextId": 4
 }

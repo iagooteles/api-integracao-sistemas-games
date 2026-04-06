@@ -14,12 +14,14 @@ router.get("/", (_req, res) => {
 router.get("/:id", (req, res) => {
   const item = findById(resource, req.params.id);
   if (!item) return res.status(404).json({ error: "Achievement não encontrado" });
+
   res.json(item);
 });
 
 router.post("/", requireFields(FIELDS), async (req, res, next) => {
   try {
     const { title, description, points, rarity, gameId, secret } = req.body;
+    
     const record = await create(resource, {
       title: String(title).trim(),
       description: String(description).trim(),

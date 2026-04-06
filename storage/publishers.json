@@ -2,13 +2,31 @@
   "items": [
     {
       "id": 1,
-      "name": "Teste JSON",
+      "name": "Teste JSONNNNN",
       "country": "BR",
       "foundedYear": 2020,
       "website": "https://t.com",
       "headquarters": "SP",
       "isIndie": true
+    },
+    {
+      "id": 3,
+      "name": "Nexus Interactive",
+      "country": "US",
+      "foundedYear": 1995,
+      "website": "https://nexusinteractive.example.com",
+      "headquarters": "San Francisco, CA",
+      "isIndie": false
+    },
+    {
+      "id": 4,
+      "name": "Nordic Byte Studio",
+      "country": "SE",
+      "foundedYear": 2021,
+      "website": "https://nordicbyte.example.org",
+      "headquarters": "Estocolmo",
+      "isIndie": true
     }
   ],
-  "nextId": 2
+  "nextId": 5
 }

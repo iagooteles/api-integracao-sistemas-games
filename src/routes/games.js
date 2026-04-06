@@ -22,6 +22,7 @@ router.get("/", (_req, res) => {
 router.get("/:id", (req, res) => {
   const item = findById(resource, req.params.id);
   if (!item) return res.status(404).json({ error: "Game não encontrado" });
+
   res.json(item);
 });
 
@@ -45,6 +46,7 @@ router.post("/", requireFields(FIELDS), async (req, res, next) => {
       publisherId: Number(publisherId),
       metacriticScore: Number(metacriticScore),
     });
+
     res.status(201).json(record);
   } catch (e) {
     next(e);
@@ -55,7 +57,9 @@ router.put("/:id", async (req, res, next) => {
   try {
     const existing = findById(resource, req.params.id);
     if (!existing) return res.status(404).json({ error: "Game não encontrado" });
+
     const patch = {};
+
     for (const key of FIELDS) {
       if (req.body[key] !== undefined) {
         if (["releaseYear", "price", "publisherId", "metacriticScore"].includes(key)) {
@@ -65,7 +69,9 @@ router.put("/:id", async (req, res, next) => {
         }
       }
     }
+
     const updated = await update(resource, req.params.id, patch);
+
     res.json(updated);
   } catch (e) {
     next(e);
@@ -75,7 +81,9 @@ router.put("/:id", async (req, res, next) => {
 router.delete("/:id", async (req, res, next) => {
   try {
     const ok = await remove(resource, req.params.id);
+
     if (!ok) return res.status(404).json({ error: "Game não encontrado" });
+
     res.status(204).send();
   } catch (e) {
     next(e);
