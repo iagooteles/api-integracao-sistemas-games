@@ -141,9 +141,31 @@ Content-Type: application/json
 }
 ```
 
-## Licença
+## Deploy
 
-[MIT](LICENSE) (sugestão – altere se desejar)
+Foi utilizado o render para deploy;
+
+https://dashboard.render.com/
+
+A url da aplicação é:
+
+```bash
+  https://api-integracao-sistemas-games.onrender.com/
+```
+
+
+Alternativamente, o deploy também foi realizado pela vercel:
+MAS, o mesmo dá erro de permissão em escrita nos métodos POST, PUT, DELETE, por estarmos usando esse storage .json como simulador de banco;
+Quando passar a aplicação para um banco de verdade o erro deve desaparecer;
+(Apesar de aparentar a mensagem de erro no retorno dos métodos, os dados são enviados normalmente, com a mensagem de erro de 'Erro interno ao acessar o armazenamento', mas quando fazemos um POST, e olhamos o GET posteriormente, o novo jogo, user, etc vai estar lá normalmente);
+
+https://vercel.com/
+
+url:
+```bash
+  https://api-integracao-sistemas-games.vercel.app/
+```
+
 
 ---
 
