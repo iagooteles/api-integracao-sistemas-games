@@ -86,6 +86,16 @@ export function findById(resourceKey, id) {
   return collection.items.find((row) => row.id === numericId) ?? null;
 }
 
+export function findByEmail(resourceKey, email) {
+  const collection = getLoadedCollection(resourceKey);
+  const normalized = String(email).trim().toLowerCase();
+  return (
+    collection.items.find(
+      (row) => String(row.email ?? "").trim().toLowerCase() === normalized
+    ) ?? null
+  );
+}
+
 export async function create(resourceKey, payload) {
   const collection = getLoadedCollection(resourceKey);
   const id = collection.nextId++;

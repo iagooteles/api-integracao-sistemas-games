@@ -8,7 +8,17 @@
       "country": "BR",
       "birthDate": "2000-05-10",
       "bio": "Gosto de RPGs e jogos indie."
+    },
+    {
+      "id": 4,
+      "name": "teste",
+      "email": "teste@teste.com",
+      "username": "teste",
+      "country": "",
+      "birthDate": "",
+      "bio": "",
+      "passwordHash": "scrypt$4bfdb07a8ff150c257534563f592fc7f$906a79dab41b6abda0c099d3c108a37b9d78c3c38fb8e7cabe85b765a18fc5658f0601991ae4a7e499918e241ec662fca9b7db3d6873a77a79f858d2dc27e050"
     }
   ],
-  "nextId": 4
+  "nextId": 5
 }

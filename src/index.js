@@ -1,7 +1,6 @@
 import "dotenv/config";
 import express from "express";
 import { initJsonStore } from "./store/jsonStore.js";
-import { issueSessionToken } from "./auth/sessionTokens.js";
 import { requireBearerToken } from "./middleware/authBearer.js";
 import authRouter from "./routes/auth.js";
 import gamesRouter from "./routes/games.js";
@@ -26,7 +25,8 @@ app.get("/", requireBearerToken, (_req, res) => {
     name: "API Games",
     version: "1.0.0",
     auth: {
-      issueToken: "POST /api/auth/token (público; gera token válido por 1 hora)",
+      register: "POST /api/auth/register (público; body: email, password)",
+      login: "POST /api/auth/login (público; body: email, password) → retorna token",
       usage: "Authorization: Bearer <token>",
     },
     endpoints: {
@@ -54,11 +54,5 @@ app.use((err, _req, res, _next) => {
 });
 
 app.listen(PORT, () => {
-  const boot = issueSessionToken();
   console.log(`Servidor em http://localhost:${PORT}`);
-  console.log(
-    "Token gerado automaticamente (válido 1h; copie e use em Authorization: Bearer …):"
-  );
-  console.log(boot.token);
-  console.log(`Expira em (ISO): ${boot.expiresAt}`);
 });

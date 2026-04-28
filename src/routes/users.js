@@ -7,14 +7,20 @@ const resource = db.users;
 
 const FIELDS = ["name", "email", "username", "country", "birthDate", "bio"];
 
+function withoutPassword(row) {
+  if (!row) return row;
+  const { passwordHash, ...rest } = row;
+  return rest;
+}
+
 router.get("/", (_req, res) => {
-  res.json(list(resource));
+  res.json(list(resource).map(withoutPassword));
 });
 
 router.get("/:id", (req, res) => {
   const item = findById(resource, req.params.id);
   if (!item) return res.status(404).json({ error: "User não encontrado" });
-  res.json(item);
+  res.json(withoutPassword(item));
 });
 
 router.post("/", requireFields(FIELDS), async (req, res, next) => {
@@ -28,7 +34,7 @@ router.post("/", requireFields(FIELDS), async (req, res, next) => {
       birthDate: String(birthDate).trim(),
       bio: String(bio).trim(),
     });
-    res.status(201).json(record);
+    res.status(201).json(withoutPassword(record));
   } catch (e) {
     next(e);
   }
@@ -48,7 +54,7 @@ router.put("/:id", async (req, res, next) => {
       }
     }
     const updated = await update(resource, req.params.id, patch);
-    res.json(updated);
+    res.json(withoutPassword(updated));
   } catch (e) {
     next(e);
   }
